@@ -125,24 +125,10 @@ describe('Storage/models/Debit', function() {
       });
 
       newDebit.save(function(err, debit) {
-        console.log('debit', debit);
         expect(err).to.be.an.instanceOf(Error);
         done();
       });
     });
 
-
   });
 });
-
-/*
- DONE:
-  - type should fail if not enum
-  - amount fails if not Currency
-  - fail if storage and bandwidth are not integers
- NEEDS REVIEW:
-  - user should be an email regex
-    - double-checking mongoose.SchemaTypes.Email
-  - should be instanceOf(reference of User model)
-    - can you do this during tests?
-*/
