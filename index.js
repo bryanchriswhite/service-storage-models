@@ -14,31 +14,35 @@ require('mongoose-types').loadTypes(mongoose);
  * @param {Object} options
  */
 function Storage(mongoURI, mongoOptions, storageOptions) {
-  if (!(this instanceof Storage)) {
-    return new Storage(mongoURI, mongoOptions, storageOptions);
-  }
+  this.connectedPromise = new Promise((resolve, reject) => {
+    if (!(this instanceof Storage)) {
+      return new Storage(mongoURI, mongoOptions, storageOptions);
+    }
 
-  assert(typeof mongoOptions === 'object', 'Invalid storage options supplied');
+    assert(typeof mongoOptions === 'object', 'Invalid storage options supplied');
 
-  var self = this;
+    var self = this;
 
-  this._uri = mongoURI;
-  this._options = mongoOptions;
-  this._log = storageOptions ? (storageOptions.logger || console) : console;
-  this.connection = this._connect();
-  this.models = this._createBoundModels();
+    this._uri = mongoURI;
+    this._options = mongoOptions;
+    this._log = storageOptions ? (storageOptions.logger || console) : console;
+    this.connection = this._connect();
+    this.models = this._createBoundModels();
 
-  this.connection.on('error', function(err) {
-    self._log.error('failed to connect to database:', err.message);
-  });
+    this.connection.on('error', function(err) {
+      self._log.error('failed to connect to database:', err.message);
+      reject(err);
+    });
 
-  this.connection.on('disconnected', function() {
-    self._log.warn('database connection closed, reconnecting...');
-    self.connection = self._connect();
-  });
+    this.connection.on('disconnected', function() {
+      self._log.warn('database connection closed, reconnecting...');
+      self.connection = self._connect();
+    });
 
-  this.connection.on('connected', function() {
-    self._log.info('connected to database');
+    this.connection.on('connected', function(connection) {
+      self._log.info('connected to database');
+      resolve(connection);
+    });
   });
 }
 
